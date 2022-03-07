@@ -2,10 +2,11 @@ const express = require('express');
 const app = express();
 const mongoose = require('mongoose')
 const path = require('path')
+const ejsMate = require('ejs-mate')
 const methodOverride = require('method-override')
 
 const Campground = require('./models/campground');
-const { findByIdAndRemove } = require('./models/campground');
+
 
 mongoose.connect('mongodb://localhost:27017/yelp-camp', { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => {
@@ -16,7 +17,7 @@ mongoose.connect('mongodb://localhost:27017/yelp-camp', { useNewUrlParser: true,
         console.log(err)
     })
 
-
+app.engine('ejs', ejsMate)
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
@@ -37,7 +38,6 @@ app.get('/campgrounds/new', (req, res) => {
 })
 
 app.post('/campgrounds', async (req, res) => {
-    const campground = req.body.campground;
     const camp = new Campground(req.body.campground)
     await camp.save();
     res.redirect(`/campgrounds/${camp._id}`)
