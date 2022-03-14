@@ -4,6 +4,7 @@ const mongoose = require('mongoose')
 const path = require('path')
 const ejsMate = require('ejs-mate')
 const methodOverride = require('method-override')
+const catchAsync = require('./utils/CatchAsync')
 
 const Campground = require('./models/campground');
 
@@ -38,9 +39,14 @@ app.get('/campgrounds/new', (req, res) => {
 })
 
 app.post('/campgrounds', async (req, res) => {
-    const camp = new Campground(req.body.campground)
-    await camp.save();
-    res.redirect(`/campgrounds/${camp._id}`)
+    try {
+        const camp = new Campground(req.body.campground)
+        await camp.save();
+        res.redirect(`/campgrounds/${camp._id}`)
+    }
+    catch (err) {
+        next(err)
+    }
 })
 
 app.get('/campgrounds/:id/edit', async (req, res) => {
@@ -64,6 +70,11 @@ app.get('/campgrounds/:id', async (req, res) => {
     const campground = await Campground.findById(id)
     res.render('./campgrounds/show', { campground })
 })
+
+app.use((err, req, res, next) => {
+    res.send('Something went wrong')
+})
+
 app.listen(3000, () => {
     console.log('SERVER UP AND RUNNING')
 })
