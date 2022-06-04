@@ -38,12 +38,24 @@ const seedDB = async () => {
             author: '6295cb9def80f75cf007352f',
             title: `${sample(places)}, ${sample(descriptors)}`,
             location: `${cities[random1000].city}, ${cities[random1000].state}`,
-            image: await seedImg(),
             description: 'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quaerat quia cupiditate fugiat dolor delectus nam, veniam commodi rerum quam nemo? Voluptatem quibusdam qui pariatur! Magni voluptas dolor qui saepe dignissimos.',
-            price
+            price,
+            images: [
+                {
+                    url: 'https://res.cloudinary.com/douqbebwk/image/upload/v1600060601/YelpCamp/ahfnenvca4tha00h2ubt.png',
+                    filename: 'YelpCamp/ahfnenvca4tha00h2ubt'
+                },
+                {
+                    url: 'https://res.cloudinary.com/douqbebwk/image/upload/v1600060601/YelpCamp/ruyoaxgf72nzpi4y6cdi.png',
+                    filename: 'YelpCamp/ruyoaxgf72nzpi4y6cdi'
+                }
+            ]
         })
         await camp.save()
     }
 }
 
 seedDB().then(() => { console.log('SEEDED!!'); mongoose.connection.close() })
+
+
+//https://images.unsplash.com/photo-1444012236767-1b471c68781c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwzMDgzMzh8MHwxfHJhbmRvbXx8fHx8fHx8fDE2NTQzNjM0NDM&ixlib=rb-1.2.1&q=80&w=400
