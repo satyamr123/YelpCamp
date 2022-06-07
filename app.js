@@ -1,5 +1,5 @@
-if (process.env.NODE_ENV !== 'production') {
-    require('dotenv').config()
+if (process.env.NODE_ENV !== "production") {
+    require('dotenv').config();
 }
 
 const express = require('express');
@@ -14,22 +14,18 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local');
 const User = require('./models/user');
 const helmet = require('helmet');
-
-const dbUrl = process.env.DB_URL || 'mongodb://localhost:27017/yelp-camp'
-//const dbUrl = 'mongodb://localhost:27017/yelp-camp';
-
 const mongoSanitize = require('express-mongo-sanitize');
-const MongoStore = require('connect-mongo');
-
-
 const userRoutes = require('./routes/users');
 const campgroundRoutes = require('./routes/campgrounds');
 const reviewRoutes = require('./routes/reviews');
 
+const MongoStore = require("connect-mongo");
+
+const dbUrl = process.env.DB_URL || 'mongodb://localhost:27017/yelp-camp';
+
 mongoose.connect(dbUrl, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-
 });
 
 const db = mongoose.connection;
@@ -46,16 +42,11 @@ app.set('views', path.join(__dirname, 'views'))
 
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(mongoSanitize());
-
-// const store = MongoDBStore.create({
-//     url: db_url,
-//     secret: 'askasj',
-//     touchAfter: 24 * 3600
-// })
-
-const secret = process.env.SECRET || 'TQWIPIIPRQ022089'
+app.use(express.static(path.join(__dirname, 'public')))
+app.use(mongoSanitize({
+    replaceWith: '_'
+}))
+const secret = process.env.SECRET || 'thisshouldbeabettersecret!';
 
 const store = MongoStore.create({
     mongoUrl: dbUrl,
@@ -66,25 +57,27 @@ const store = MongoStore.create({
 });
 
 store.on("error", function (e) {
-    console.log('Session Store Error!!', e)
+    console.log("SESSION STORE ERROR", e)
 })
 
 const sessionConfig = {
     store,
-    name: 'smile',
+    name: 'session',
     secret,
     resave: false,
     saveUninitialized: true,
     cookie: {
         httpOnly: true,
-        //secure:true,
+        // secure: true,
         expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
         maxAge: 1000 * 60 * 60 * 24 * 7
     }
 }
 
-app.use(session(sessionConfig))
+app.use(session(sessionConfig));
 app.use(flash());
+app.use(helmet());
+
 
 const scriptSrcUrls = [
     "https://stackpath.bootstrapcdn.com/",
@@ -122,14 +115,13 @@ app.use(
                 "'self'",
                 "blob:",
                 "data:",
-                "https://res.cloudinary.com/dp0ke6sps/", //SHOULD MATCH YOUR CLOUDINARY ACCOUNT! 
+                "https://res.cloudinary.com/dp0ke6sp/", //SHOULD MATCH YOUR CLOUDINARY ACCOUNT! 
                 "https://images.unsplash.com/",
             ],
             fontSrc: ["'self'", ...fontSrcUrls],
         },
     })
 );
-
 
 
 app.use(passport.initialize());
@@ -140,14 +132,11 @@ passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
 app.use((req, res, next) => {
-    if (!['/login', '/'].includes(req.originalUrl)) {
-        req.session.returnTo = req.originalUrl;
-    }
     res.locals.currentUser = req.user;
     res.locals.success = req.flash('success');
     res.locals.error = req.flash('error');
     next();
-});
+})
 
 
 app.use('/', userRoutes);
@@ -171,7 +160,6 @@ app.use((err, req, res, next) => {
 })
 
 const port = process.env.PORT || 3000;
-
 app.listen(port, () => {
     console.log(`Serving on port ${port}`)
 })
